@@ -1,0 +1,13 @@
+Tool ID: red_cluster_alert_30min
+Description: Shows any clusters in red status within the last 30 minutes, highlighting critical issues.
+Labels: cluster-health
+Configuration Type: ES|QL
+
+ES|QL Query:
+
+FROM .monitoring-es*
+| WHERE type == "cluster_stats"
+| WHERE timestamp >= NOW() - 30 MINUTES
+| WHERE cluster_state.status == "red"
+| STATS VALUES(cluster_state.status) BY timestamp
+| SORT timestamp DESC
