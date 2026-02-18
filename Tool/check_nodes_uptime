@@ -1,6 +1,6 @@
 Tool ID:check_nodes_uptime
 Description: Check uptime of nodes. In few cases, when there are unassigned shards, do check if reboot was occurred or not. It will help to decrease false positive.
-Labels: cluster-health and node-uptime
+Labels: cluster-health , node-uptime
 Configuration Type: ES|QL
 
 ES|QL Query:
