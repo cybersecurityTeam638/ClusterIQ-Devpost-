@@ -1,0 +1,25 @@
+Tool ID: high_node_resource_alert
+Description: Identifies nodes with high CPU or heap usage, showing alerts and current metrics.
+Labels: node-stats
+Configuration Type: ES|QL
+
+ES|QL Query:
+
+FROM .monitoring-es*
+| WHERE type == "node_stats"
+| EVAL heap_alert = CASE(
+      node_stats.jvm.mem.heap_used_percent > 85, "HIGH_HEAP",
+      "OK"
+  )
+| EVAL cpu_alert = CASE(
+      node_stats.process.cpu.percent > 85, "HIGH_CPU",
+      "OK"
+  )
+| WHERE heap_alert == "HIGH_HEAP" OR cpu_alert == "HIGH_CPU"
+| KEEP node_stats.node_id,
+       heap_alert,
+       cpu_alert,
+       node_stats.jvm.mem.heap_used_percent,
+       node_stats.process.cpu.percent,
+       timestamp
+| SORT timestamp DESC
