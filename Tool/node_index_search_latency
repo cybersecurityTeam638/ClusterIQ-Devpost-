@@ -1,0 +1,28 @@
+Tool ID: node_index_search_latency
+Description: Shows the health status of clusters over the last day, summarizing total counts by status
+Labels: node-index-latency
+Configuration Type: ES|QL
+
+ES|QL Query:
+
+FROM .monitoring-es*
+| WHERE timestamp >= NOW() - 5 MINUTES
+| EVAL search_latency_ms = CASE(
+      node_stats.indices.search.query_total > 0,
+      node_stats.indices.search.query_time_in_millis / node_stats.indices.search.query_total,
+      0
+  )
+| EVAL index_latency_ms = CASE(
+      node_stats.indices.indexing.index_total > 0,
+      node_stats.indices.indexing.index_time_in_millis / node_stats.indices.indexing.index_total,
+      0
+  )
+ 
+| STATS
+    VALUES(node_stats.indices.search.query_total),
+    VALUES(node_stats.indices.search.query_time_in_millis),
+    VALUES(search_latency_ms),
+    VALUES(node_stats.indices.indexing.index_total),
+    VALUES(node_stats.indices.indexing.index_time_in_millis),
+    VALUES(index_latency_ms)
+BY source_node.name, source_node.ip
