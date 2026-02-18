@@ -1,0 +1,44 @@
+Tool ID: last_red_status_check
+Description: This tool will check the last time cluster was red along with health check.
+Labels: cluster-health
+Configuration Type: ES|QL
+
+ES|QL Query:
+
+FROM .monitoring-es*
+| EVAL ts_min = DATE_TRUNC(1 minute, timestamp)
+| STATS
+    last_red_ts = MAX(CASE(cluster_state.status == "red", ts_min, NULL)),
+
+    /* Node metrics */
+    node_id = VALUES(node_stats.node_id),
+    node_master = VALUES(node_stats.node_master),
+    heap_used_percent = VALUES(node_stats.jvm.mem.heap_used_percent),
+    cpu_percent = VALUES(node_stats.process.cpu.percent),
+    total_bytes = VALUES(node_stats.fs.total.total_in_bytes),
+    available_bytes = VALUES(node_stats.fs.total.available_in_bytes),
+    search_rejected = VALUES(node_stats.thread_pool.search.rejected),
+    write_rejected = VALUES(node_stats.thread_pool.write.rejected),
+    open_fds = VALUES(node_stats.process.open_file_descriptors),
+    max_fds = VALUES(node_stats.process.max_file_descriptors),
+    load_1m = VALUES(`node_stats.os.cpu.load_average.1m`),
+
+    /* CPU / Heap Alerts */
+    heap_alert = VALUES(CASE(node_stats.jvm.mem.heap_used_percent > 85, "HIGH_HEAP", "OK")),
+    cpu_alert = VALUES(CASE(node_stats.process.cpu.percent > 85, "HIGH_CPU", "OK")),
+
+    /* Shard metrics */
+    shard_state = MAX(shard.state),
+    shard_node = MAX(shard.node),
+    shard_id = MAX(shard.shard),
+    shard_primary = MAX(shard.primary),
+
+    /* Index/Search latency */
+    search_latency_ms = VALUES(CASE(node_stats.indices.search.query_total > 0, node_stats.indices.search.query_time_in_millis / node_stats.indices.search.query_total, 0)),
+    index_latency_ms = VALUES(CASE(node_stats.indices.indexing.index_total > 0, node_stats.indices.indexing.index_time_in_millis / node_stats.indices.indexing.index_total, 0)),
+
+    /* Flag for red cluster */
+    is_red = MAX(CASE(cluster_state.status == "red", 1, 0))
+BY ts_min
+| WHERE ts_min >= last_red_ts AND ts_min <= last_red_ts + 1 MINUTE
+| SORT ts_min DESC
