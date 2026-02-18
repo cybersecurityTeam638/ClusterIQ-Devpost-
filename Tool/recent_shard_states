@@ -1,0 +1,16 @@
+Tool ID: recent_shard_states
+Description: Displays shard states per node from the last 5 minutes, including primary and replica info.
+Labels: shards-status
+Configuration Type: ES|QL
+
+ES|QL Query:
+
+FROM .monitoring-es*
+| WHERE type == "shards"
+| WHERE timestamp >= NOW() - 5 MINUTES
+| STATS
+    VALUES(shard.state),
+    VALUES(shard.node),
+    VALUES(shard.shard),
+    VALUES(shard.primary)
+BY source_node.name, source_node.ip
