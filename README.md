@@ -4,6 +4,8 @@ This project is developed for the **Elasticsearch Agent Builder Hackathon**.
 It includes a collection of **9 monitoring tools** and an **Agent Builder** to help build, deploy, and manage Elasticsearch agents efficiently.  
 The tools provide insights into cluster health, node performance, shard states, and alerts, while the Agent Builder enables easy configuration and deployment of agents.
 
+---
+
 ## **Project Components**
 
 ### **1. Monitoring Tools**
@@ -23,6 +25,7 @@ The project includes **9 Elasticsearch ES|QL monitoring tools**, each with a **T
 
 > Each tool includes a ready-to-use **ES|QL query** to retrieve data from Elasticsearch.
 
+---
 
 ### **2. Elasticsearch Agent Builder**
 The **Agent Builder** component allows you to:  
@@ -33,7 +36,7 @@ The **Agent Builder** component allows you to:
 
 This tool is particularly useful for **Hackathon participants or teams managing multiple clusters**, providing a simplified interface for agent creation and deployment.
 
-
+---
 
 ## **Features**
 - Ready-made **ES|QL monitoring tools** for clusters and nodes.  
@@ -41,4 +44,6 @@ This tool is particularly useful for **Hackathon participants or teams managing 
 - Real-time cluster health and performance monitoring.  
 - Alerts for high resource usage, red cluster status, and shard issues.  
 - Simple and modular structure for extending tools and queries.
+
+---
 
