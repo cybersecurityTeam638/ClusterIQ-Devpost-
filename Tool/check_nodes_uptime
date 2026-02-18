@@ -1,0 +1,25 @@
+Tool ID:check_nodes_uptime
+Description: Check uptime of nodes. In few cases, when there are unassigned shards, do check if reboot was occurred or not. It will help to decrease false positive.
+Labels: cluster-health and node-uptime
+Configuration Type: ES|QL
+
+ES|QL Query:
+
+FROM metrics*
+| WHERE data_stream.dataset == "system.uptime"
+| WHERE @timestamp >= NOW() - 30 SECONDS
+| MV_EXPAND host.ip
+| EVAL expected_node = CASE(
+    host.ip == TO_IP("10.100.166.40"), "node-2",
+    host.ip == TO_IP("10.100.166.41"), "node-1",
+    host.ip == TO_IP("10.100.166.42"), "node-3",
+    host.ip == TO_IP("10.100.166.54"), "node-n",
+    "unknown"
+  )
+| WHERE expected_node != "unknown"
+| EVAL uptime_ms = TO_LONG(system.uptime.duration.ms)
+| EVAL uptime_days = FLOOR(uptime_ms / (1000*60*60*24))
+| EVAL uptime_hours = FLOOR((uptime_ms % (1000*60*60*24)) / (1000*60*60))
+| EVAL uptime_minutes = FLOOR((uptime_ms % (1000*60*60)) / (1000*60))
+| EVAL uptime_seconds = FLOOR((uptime_ms % (1000*60)) / 1000)
+| STATS TOP(host.hostname, 1, "desc") BY host.hostname, host.ip, expected_node, uptime_days, uptime_hours, uptime_minutes
