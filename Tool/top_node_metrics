@@ -1,0 +1,22 @@
+Tool ID: top_node_metrics
+Description: Displays top node performance stats, including CPU, memory, disk, and thread pool metrics.
+Labels: node-stats
+Configuration Type: ES|QL
+
+ES|QL Query:
+
+FROM .monitoring-es*
+| WHERE type == "node_stats"
+| STATS
+    top_node_id = TOP(node_stats.node_id, 5, "desc"),
+    top_node_master = TOP(node_stats.node_master, 5, "desc"),
+    top_heap_used_percent = TOP(node_stats.jvm.mem.heap_used_percent, 5, "desc"),
+    top_cpu_percent = TOP(node_stats.process.cpu.percent, 5, "desc"),
+    top_total_bytes = TOP(node_stats.fs.total.total_in_bytes, 5, "desc"),
+    top_available_bytes = TOP(node_stats.fs.total.available_in_bytes, 5, "desc"),
+    top_search_rejected = TOP(node_stats.thread_pool.search.rejected, 5, "desc"),
+    top_write_rejected = TOP(node_stats.thread_pool.write.rejected, 5, "desc"),
+    top_open_fds = TOP(node_stats.process.open_file_descriptors, 5, "desc"),
+    top_max_fds = TOP(node_stats.process.max_file_descriptors, 5, "desc"),
+    top_load_1m = TOP(`node_stats.os.cpu.load_average.1m`, 5, "desc")
+BY source_node.name, source_node.ip
