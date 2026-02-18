@@ -1,0 +1,15 @@
+Tool ID:latest_cluster_status
+Description: Displays the last few cluster health statuses, showing current state over recent minutes.
+Labels: cluster-health
+Configuration Type: ES|QL
+
+ES|QL Query:
+
+FROM .monitoring-es*
+| WHERE type == "cluster_stats"
+| EVAL ts = DATE_TRUNC(1 minute, timestamp)
+| STATS VALUES(cluster_state.status) BY ts
+| SORT ts DESC
+| KEEP ts, `VALUES(cluster_state.status)`
+| LIMIT 5
+| STATS TOP(host.hostname, 1, "desc") BY host.hostname, host.ip, expected_node, uptime_days, uptime_hours, uptime_minutes
