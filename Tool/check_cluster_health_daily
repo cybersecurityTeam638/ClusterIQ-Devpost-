@@ -1,0 +1,13 @@
+Tool ID: check_cluster_health_daily
+Description: Shows the health status of clusters over the last day, summarizing total counts by status
+Labels: cluster-health
+Configuration Type: ES|QL
+
+ES|QL Query:
+
+FROM .monitoring-es*
+| WHERE type == "cluster_stats"
+| WHERE timestamp >= NOW() - 1 DAY
+| STATS total = COUNT(*) BY cluster_state.status
+| SORT total DESC
+| LIMIT 5
