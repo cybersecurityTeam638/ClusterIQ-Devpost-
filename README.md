@@ -1,3 +1,7 @@
+## **License**
+
+This project is licensed under the [MIT License](LICENSE).
+
 # **Elasticsearch Agent Builder Project**
 
 This project is developed for the **Elasticsearch Agent Builder Hackathon**.  
